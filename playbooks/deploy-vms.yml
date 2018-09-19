@@ -187,12 +187,15 @@
       shell: |
         vbmc stop {{ hostvars[item]['server_hostname'] }}
         vbmc delete {{ hostvars[item]['server_hostname'] }}
+        for i in `ps aux | grep -i vbmc | awk {'print $2'}` ; do kill -9 $i ; done
+        vbmcd
         vbmc add {{ hostvars[item]['server_hostname'] }}  --username root --password secrete --address {{ mnaio_host_networks.dhcp.address | ipaddr('address') }} --port {{ hostvars[item]['server_virtual_bmc_port'] }}
         vbmc start {{ hostvars[item]['server_hostname'] }}
       failed_when: false
       when:
         - hostvars[item]['server_vm'] | default(false) | bool
       with_items: "{{ groups['pxe_servers'] }}"
+
 
 - name: Check VM Connectivity
   import_playbook: vm-status.yml
